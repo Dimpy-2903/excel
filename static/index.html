@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AmbuFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Smart Mobility Command</p>
+          <h1>AmbuFlow – AI Ambulance Priority System</h1>
+        </div>
+        <div class="status-pill" id="systemState">NORMAL MODE</div>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel upload-panel">
+          <h2>Traffic Video Intake</h2>
+          <div class="upload-box" id="uploadBox">
+            <label for="videoInput" class="upload-label">
+              <span class="upload-icon">⤴</span>
+              <span>Upload traffic camera video</span>
+            </label>
+            <input id="videoInput" type="file" accept="video/mp4,video/avi,video/mov,video/webm" />
+          </div>
+
+          <div class="video-grid">
+            <div class="video-card">
+              <h3>Original Feed</h3>
+              <video id="originalVideo" controls playsinline></video>
+            </div>
+            <div class="video-card">
+              <h3>Processed Feed</h3>
+              <video id="processedVideo" controls playsinline></video>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <div class="metric-box">
+              <span>Detection Status</span>
+              <strong id="detectionStatus">Awaiting input</strong>
+            </div>
+            <div class="metric-box">
+              <span>Ambulances</span>
+              <strong id="ambulanceCount">0</strong>
+            </div>
+            <div class="metric-box">
+              <span>Confidence</span>
+              <strong id="confidenceValue">0%</strong>
+            </div>
+            <div class="metric-box">
+              <span>Current Direction</span>
+              <strong id="directionValue">-</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel signal-panel">
+          <h2>Four-Way Junction Simulation</h2>
+          <div class="junction-wrapper">
+            <div class="junction-grid">
+              <div class="direction north" data-direction="NORTH">
+                <span>NORTH</span>
+                <div class="signal-lights">
+                  <div class="light red"></div>
+                  <div class="light yellow"></div>
+                  <div class="light green"></div>
+                </div>
+              </div>
+
+              <div class="direction east" data-direction="EAST">
+                <span>EAST</span>
+                <div class="signal-lights">
+                  <div class="light red"></div>
+                  <div class="light yellow"></div>
+                  <div class="light green"></div>
+                </div>
+              </div>
+
+              <div class="direction south" data-direction="SOUTH">
+                <span>SOUTH</span>
+                <div class="signal-lights">
+                  <div class="light red"></div>
+                  <div class="light yellow"></div>
+                  <div class="light green"></div>
+                </div>
+              </div>
+
+              <div class="direction west" data-direction="WEST">
+                <span>WEST</span>
+                <div class="signal-lights">
+                  <div class="light red"></div>
+                  <div class="light yellow"></div>
+                  <div class="light green"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="emergency-banner" id="emergencyBanner">
+            <span class="emoji">🚑</span>
+            <div>
+              <strong>Emergency Priority Activated</strong>
+              <p id="emergencySummary">North lane → GREEN</p>
+            </div>
+          </div>
+
+          <div class="junction-meta">
+            <div>
+              <span>Detection Time</span>
+              <strong id="detectionTime">--:--:--</strong>
+            </div>
+            <div>
+              <span>Signal State</span>
+              <strong id="signalStateText">Normal cycle</strong>
+            </div>
+            <div>
+              <span>Emergency Mode</span>
+              <strong id="emergencyModeText">OFF</strong>
+            </div>
+            <div>
+              <span>Signal Changes In</span>
+              <strong id="signalCountdown">60s</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel live-panel">
+          <h2>Live Tracking</h2>
+          <div class="live-track-card">
+            <div class="track-header">
+              <div>
+                <span class="track-label">Ambulance Status</span>
+                <strong id="liveStatus">Ready to dispatch</strong>
+              </div>
+              <span class="track-pill" id="liveDirection">-</span>
+            </div>
+
+            <div class="live-map" role="img" aria-label="Live ambulance route map">
+              <svg id="liveMapSvg" viewBox="0 0 1000 440" preserveAspectRatio="xMidYMid meet">
+                <g class="map-roads">
+                  <path d="M40 70 H960 M40 220 H960 M40 370 H960 M230 40 V400 M500 40 V400 M800 40 V400" />
+                  <path class="road-center" d="M40 70 H960 M40 220 H960 M40 370 H960 M230 40 V400 M500 40 V400 M800 40 V400" />
+                </g>
+                <polyline class="planned-route" points="60,70 230,70 500,70 500,220 500,370 800,370" />
+                <path class="green-corridor" id="greenCorridor" d="" />
+                <g class="map-junction" data-junction="1" transform="translate(230 70)">
+                  <circle class="junction-halo" r="25" />
+                  <circle class="junction-signal" r="9" />
+                  <text y="-32">J1 · Metro North</text>
+                </g>
+                <g class="map-junction" data-junction="2" transform="translate(500 70)">
+                  <circle class="junction-halo" r="25" />
+                  <circle class="junction-signal" r="9" />
+                  <text y="-32">J2 · Central Ave</text>
+                </g>
+                <g class="map-junction" data-junction="3" transform="translate(500 220)">
+                  <circle class="junction-halo" r="25" />
+                  <circle class="junction-signal" r="9" />
+                  <text x="-8" y="-32">J3 · Broadway</text>
+                </g>
+                <g class="map-junction" data-junction="4" transform="translate(500 370)">
+                  <circle class="junction-halo" r="25" />
+                  <circle class="junction-signal" r="9" />
+                  <text x="-8" y="-32">J4 · Hospital Way</text>
+                </g>
+                <g class="map-start" transform="translate(60 70)">
+                  <circle r="13" />
+                  <text y="34">START</text>
+                </g>
+                <g class="map-hospital" transform="translate(800 370)">
+                  <circle r="17" />
+                  <text y="38">HOSPITAL</text>
+                </g>
+                <g class="ambulance-marker" id="ambulanceMarker" transform="translate(60 70)">
+                  <circle r="17" />
+                  <text y="6">🚑</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="dispatch-controls">
+              <button class="dispatch-button" id="dispatchButton" type="button">DISPATCH AMBULANCE</button>
+              <button class="simulation-button" id="stopSimulationButton" type="button" disabled>STOP</button>
+              <button class="simulation-button" id="resetSimulationButton" type="button">RESET</button>
+            </div>
+
+            <div class="tracking-stats">
+              <div>
+                <span>Ambulance ID</span>
+                <strong id="liveAmbulanceId">AMB-001</strong>
+              </div>
+              <div>
+                <span>Current Junction</span>
+                <strong id="currentJunction">START</strong>
+              </div>
+              <div>
+                <span>Next Junction</span>
+                <strong id="nextJunction">Junction 1</strong>
+              </div>
+              <div>
+                <span>Distance to Next</span>
+                <strong id="distanceToNext">280 m</strong>
+              </div>
+              <div>
+                <span>Distance Remaining</span>
+                <strong id="distanceRemaining">1,570 m</strong>
+              </div>
+              <div>
+                <span>Speed</span>
+                <strong id="liveSpeed">40 km/h</strong>
+              </div>
+              <div>
+                <span>Progress</span>
+                <strong id="liveProgress">0%</strong>
+              </div>
+              <div>
+                <span>ETA</span>
+                <strong id="liveEta">2:22</strong>
+              </div>
+              <div>
+                <span>Junction Priority</span>
+                <strong id="routePriorityStatus">OFF</strong>
+              </div>
+            </div>
+            <div class="live-log" id="liveLog" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="panel congestion-panel">
+          <h2>Traffic Congestion Overview</h2>
+          <div class="congestion-list" id="congestionList"></div>
+        </section>
+
+        <section class="panel route-panel">
+          <h2>Ambulance Route Optimization</h2>
+          <div class="route-summary">
+            <div>
+              <span>Best Hospital</span>
+              <strong id="hospitalName">City General Trauma Center</strong>
+            </div>
+            <div>
+              <span>Distance</span>
+              <strong id="routeDistance">0.0 km</strong>
+            </div>
+            <div>
+              <span>ETA</span>
+              <strong id="routeEta">0 min</strong>
+            </div>
+          </div>
+          <div class="route-legend">
+            <span class="legend low">Low</span>
+            <span class="legend medium">Medium</span>
+            <span class="legend high">High</span>
+            <span class="legend severe">Severe</span>
+          </div>
+          <div class="hospital-options" id="hospitalOptions"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
